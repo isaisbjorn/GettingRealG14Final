@@ -1,0 +1,252 @@
+<!--
+    ClientDetailView.xaml
+    Klient-detaljevinduet — åbnes fra ClientView når man klikker "Se valgt klient".
+
+    Layout: to kolonner
+      Venstre (*  , lys)     — kontaktinfo + aftaleoversigt
+      Højre  (340px, mørk)  — journalnoter med tidsstempler
+-->
+<Window x:Class="wpfGettingRealG14This.Views.ClientDetailView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ManuVision — Klient"
+        Height="580" Width="860"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Venstre: klientinfo og aftaler -->
+            <ColumnDefinition Width="*"/>
+            <!-- Tynd skillelinje -->
+            <ColumnDefinition Width="1"/>
+            <!-- Højre: journalnoter -->
+            <ColumnDefinition Width="340"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ========================== -->
+        <!-- VENSTRE: KLIENTINFO        -->
+        <!-- ========================== -->
+        <Border Grid.Column="0"
+                Background="White"
+                Padding="24">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Tilbage-knap -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Fulde navn (stor overskrift) -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Kontaktinfo -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Skillelinje -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- "Aftaler"-overskrift -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Aftalelisten -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Tilbage-knap -->
+                <Button Grid.Row="0"
+                        Content="← Tilbage"
+                        Click="TilbageKnap_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#7F8C8D"
+                        FontSize="12"
+                        Cursor="Hand"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,16"/>
+
+                <!--
+                    Klientens fulde navn — binder til FullName i ViewModel
+                    FullName er beregnet som "Fornavn Efternavn" i ViewModel
+                -->
+                <TextBlock Grid.Row="1"
+                           Text="{Binding FullName}"
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           Foreground="#2F3640"
+                           Margin="0,0,0,12"/>
+
+                <!-- Kontaktinfo: telefon og email -->
+                <StackPanel Grid.Row="2" Margin="0,0,0,20">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                        <TextBlock Text="Telefon: "
+                                   FontSize="14"
+                                   Foreground="#7F8C8D"/>
+                        <TextBlock Text="{Binding Phone}"
+                                   FontSize="14"
+                                   Foreground="#2F3640"/>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Email: "
+                                   FontSize="14"
+                                   Foreground="#7F8C8D"/>
+                        <TextBlock Text="{Binding Email}"
+                                   FontSize="14"
+                                   Foreground="#2F3640"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Vandret skillelinje -->
+                <Border Grid.Row="3"
+                        Height="1"
+                        Background="#E0E0E0"
+                        Margin="0,0,0,16"/>
+
+                <!-- Overskrift over aftalelisten -->
+                <TextBlock Grid.Row="4"
+                           Text="Aftaler"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="#2F3640"
+                           Margin="0,0,0,12"/>
+
+                <!--
+                    Liste over alle aftaler for klienten, sorteret med nyeste øverst.
+                    Appointments er en ObservableCollection<ClientAppointmentDisplay>
+                    fra ClientDetailViewModel.
+                -->
+                <ListBox Grid.Row="5"
+                         ItemsSource="{Binding Appointments}"
+                         BorderBrush="#BDC3C7"
+                         BorderThickness="1"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="12,8"/>
+                            <Setter Property="BorderBrush" Value="#F0F0F0"/>
+                            <Setter Property="BorderThickness" Value="0,0,0,1"/>
+                            <Setter Property="Focusable" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <!--
+                        Hvert ClientAppointmentDisplay-objekt vises med:
+                          - Dato + tid på én linje
+                          - Forløbsnavn under
+                    -->
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding DateLabel}"
+                                               FontSize="13"
+                                               FontWeight="SemiBold"
+                                               Foreground="#2F3640"
+                                               Margin="0,0,10,0"/>
+                                    <TextBlock Text="{Binding TimeSlot}"
+                                               FontSize="13"
+                                               Foreground="#5D6D7E"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding CourseName}"
+                                           FontSize="12"
+                                           Foreground="#7F8C8D"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Grid>
+        </Border>
+
+        <!-- Lodret skillelinje -->
+        <Border Grid.Column="1" Background="#E0E0E0"/>
+
+        <!-- ========================== -->
+        <!-- HØJRE: JOURNALNOTER        -->
+        <!-- ========================== -->
+        <Border Grid.Column="2"
+                Background="#1E272E"
+                Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Overskrift -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Skillelinje -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Notationshistorik (scrollbar) -->
+                    <RowDefinition Height="*"/>
+                    <!-- Input til ny note -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Gem-knap -->
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <!-- "Journal"-overskrift -->
+                <TextBlock Grid.Row="0"
+                           Text="Journal"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           Margin="0,0,0,8"/>
+
+                <Border Grid.Row="1"
+                        Height="1"
+                        Background="#2F3640"
+                        Margin="0,0,0,12"/>
+
+                <!--
+                    Historikfeltet — viser alle tidligere noter med tidsstempler.
+                    IsReadOnly gør at brugeren ikke kan redigere historikken.
+                    TextWrapping sørger for at lang tekst ikke forsvinder ud til siden.
+                    ScrollViewer giver en scrollbar når historikken bliver lang.
+                -->
+                <ScrollViewer Grid.Row="2"
+                              VerticalScrollBarVisibility="Auto"
+                              Margin="0,0,0,12">
+                    <TextBox Text="{Binding Notes, Mode=OneWay}"
+                             IsReadOnly="True"
+                             Background="#2F3640"
+                             Foreground="#BDC3C7"
+                             BorderThickness="0"
+                             FontSize="12"
+                             TextWrapping="Wrap"
+                             FontFamily="Consolas"/>
+                </ScrollViewer>
+
+                <!--
+                    Inputfeltet — her skriver behandleren en ny note.
+                    AcceptsReturn=True gør at man kan lave linjeskift med Enter.
+                    Binder til NewNoteText i ViewModel.
+                -->
+                <TextBox Grid.Row="3"
+                         Text="{Binding NewNoteText, UpdateSourceTrigger=PropertyChanged}"
+                         AcceptsReturn="True"
+                         TextWrapping="Wrap"
+                         Height="80"
+                         Padding="8,6"
+                         Margin="0,0,0,8"
+                         Background="#2F3640"
+                         Foreground="White"
+                         CaretBrush="White"
+                         BorderBrush="#5D6D7E"
+                         BorderThickness="1"
+                         FontSize="12"/>
+
+                <!--
+                    Gem-knappen tilføjer den nye note med tidsstempel og gemmer.
+                    SaveNoteCommand er kun aktiv når inputfeltet ikke er tomt.
+                -->
+                <Button Grid.Row="4"
+                        Content="Gem note"
+                        Command="{Binding SaveNoteCommand}"
+                        FontSize="13"
+                        Padding="0,10"
+                        Background="#5D6D7E"
+                        Foreground="White"
+                        BorderThickness="0"
+                        Cursor="Hand"/>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

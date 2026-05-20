@@ -1,0 +1,329 @@
+<!--
+    CalendarView.xaml
+    Kalendervinduet — viser en månedsoversigt til venstre
+    og en liste over aftaler for den valgte dag til højre.
+
+    Layoutet er opdelt i to kolonner:
+      Venstre (*)   — kalender med navigation og gitter
+      Højre (300px) — aftaleliste for den valgte dag
+-->
+<Window x:Class="wpfGettingRealG14This.Views.CalendarView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ManuVision — Kalender"
+        Height="600" Width="900"
+        WindowStartupLocation="CenterScreen"
+        Background="#F5F6FA">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Venstre: selve kalendergitteret -->
+            <ColumnDefinition Width="*"/>
+            <!-- Tynd skillelinje -->
+            <ColumnDefinition Width="1"/>
+            <!-- Højre: aftaleliste for valgt dag -->
+            <ColumnDefinition Width="300"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ================================ -->
+        <!-- VENSTRE SIDE: KALENDER           -->
+        <!-- ================================ -->
+        <Border Grid.Column="0" Background="White" Padding="24,20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Tilbage-knap øverst -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Navigationsrækken: ← Maj 2026 → -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Ugedagsoverskrifter: Man Tir Ons ... -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Selve kalendergitteret -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Tilbage-knap — lukker dette vindue og vender tilbage til menuen -->
+                <Button Grid.Row="0"
+                        Content="← Tilbage til menu"
+                        Click="TilbageKnap_Click"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#7F8C8D"
+                        FontSize="12"
+                        Cursor="Hand"
+                        HorizontalAlignment="Left"
+                        Margin="0,0,0,12"/>
+
+                <!-- ======================== -->
+                <!-- NAVIGATION: ← Måned → -->
+                <!-- ======================== -->
+                <Grid Grid.Row="1" Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!--
+                        Forrige-måned-knap
+                        Command binder til PreviousMonthCommand i ViewModel
+                    -->
+                    <Button Grid.Column="0"
+                            Content="◀"
+                            Command="{Binding PreviousMonthCommand}"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Foreground="#2F3640"
+                            Padding="8,4"/>
+
+                    <!--
+                        Månedslabel — viser fx "Maj 2026"
+                        Binder til MonthLabel i ViewModel
+                    -->
+                    <TextBlock Grid.Column="1"
+                               Text="{Binding MonthLabel}"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="#2F3640"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+
+                    <!-- Næste-måned-knap -->
+                    <Button Grid.Column="2"
+                            Content="▶"
+                            Command="{Binding NextMonthCommand}"
+                            FontSize="14"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Cursor="Hand"
+                            Foreground="#2F3640"
+                            Padding="8,4"/>
+                </Grid>
+
+                <!-- ======================== -->
+                <!-- UGEDAGSOVERSKRIFTER      -->
+                <!-- Man Tir Ons Tor Fre Lør Søn -->
+                <!-- ======================== -->
+                <!--
+                    UniformGrid fordeler sine børn ligeligt i et gitter.
+                    Med Columns=7 laver den automatisk 7 lige brede kolonner.
+                    Vi bruger den her til at lave ugedagsrækkerne.
+                -->
+                <UniformGrid Grid.Row="2" Columns="7" Margin="0,0,0,4">
+                    <TextBlock Text="Man" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Tir" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Ons" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Tor" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Fre" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Lør" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                    <TextBlock Text="Søn" HorizontalAlignment="Center" FontSize="12" Foreground="#7F8C8D" Padding="0,4"/>
+                </UniformGrid>
+
+                <!-- ======================== -->
+                <!-- KALENDERGITTER           -->
+                <!-- ======================== -->
+                <!--
+                    ListBox viser vores 42 DayDisplay-objekter fra ViewModel.
+                    SelectedItem binder til SelectedDay i ViewModel — så når
+                    brugeren klikker på en dag, opdaterer ViewModel
+                    automatisk aftalelisten til højre.
+
+                    Vi slukker for scrollbars fordi vi altid viser præcis 42 felter.
+                -->
+                <ListBox Grid.Row="3"
+                         ItemsSource="{Binding Days}"
+                         SelectedItem="{Binding SelectedDay}"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled">
+
+                    <!--
+                        Vi skifter ListBoxens panel fra den normale lodret-stablede liste
+                        til et UniformGrid med 7 kolonner — det giver os kalenderformen.
+                    -->
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <UniformGrid Columns="7"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+
+                    <!--
+                        Stil på hvert ListBoxItem (hvert dag-felt)
+                        Vi fjerner WPFs standardblå markering og laver vores egen.
+                        DataTrigger kan reagere på properties fra vores DayDisplay-klasse.
+                    -->
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                            <Setter Property="Padding" Value="0"/>
+                            <Setter Property="Margin" Value="1"/>
+                            <Setter Property="Cursor" Value="Hand"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Style.Triggers>
+                                <!-- Blå baggrund på den valgte dag -->
+                                <Trigger Property="IsSelected" Value="True">
+                                    <Setter Property="Background" Value="#EAF2FF"/>
+                                </Trigger>
+                                <!-- Lysegrå ved hover -->
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#F5F6FA"/>
+                                </Trigger>
+                                <!--
+                                    Dage der IKKE tilhører den aktuelle måned tones ned.
+                                    DataTrigger binder til IsInCurrentMonth på vores DayDisplay.
+                                -->
+                                <DataTrigger Binding="{Binding IsInCurrentMonth}" Value="False">
+                                    <Setter Property="Opacity" Value="0.25"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <!--
+                        DataTemplate bestemmer hvordan hvert DayDisplay-objekt
+                        skal se ud inde i gitteret.
+                        Vi viser: dagnummeret øverst + en rød prik nedenunder
+                        hvis der er aftaler på den dag.
+                    -->
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <!--
+                                Et Grid med to rækker:
+                                  Øverst: dagnummeret
+                                  Nederst: den røde prik (kun hvis HasAppointments = true)
+                            -->
+                            <Grid Height="68">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="16"/>
+                                </Grid.RowDefinitions>
+
+                                <!-- Dagnummer — viser fx "15" -->
+                                <TextBlock Grid.Row="0"
+                                           Text="{Binding Date.Day}"
+                                           FontSize="14"
+                                           Foreground="#2F3640"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"/>
+
+                                <!--
+                                    Rød prik — vises kun hvis HasAppointments er true.
+                                    Ellipse er en oval/cirkel-figur i WPF.
+                                    Vi bruger en DataTrigger til at skifte Visibility.
+                                -->
+                                <Ellipse Grid.Row="1"
+                                         Width="7" Height="7"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Center">
+                                    <Ellipse.Style>
+                                        <Style TargetType="Ellipse">
+                                            <!-- Som udgangspunkt er prikken usynlig -->
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Setter Property="Fill" Value="#E74C3C"/>
+                                            <Style.Triggers>
+                                                <!-- Hvis HasAppointments er true, gøres prikken synlig -->
+                                                <DataTrigger Binding="{Binding HasAppointments}" Value="True">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Ellipse.Style>
+                                </Ellipse>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Grid>
+        </Border>
+
+        <!-- Lodret skillelinje -->
+        <Border Grid.Column="1" Background="#E0E0E0"/>
+
+        <!-- ================================ -->
+        <!-- HØJRE SIDE: AFTALELISTE          -->
+        <!-- ================================ -->
+        <Border Grid.Column="2" Background="#1E272E" Padding="20">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Datooverskrift -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Lille skillelinje -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Listen af aftaler -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!--
+                    Overskriften viser hvilken dag der er valgt,
+                    fx "Torsdag d. 15. maj" — eller "Vælg en dag i kalenderen"
+                    SelectedDateLabel opdateres i ViewModel når brugeren klikker.
+                -->
+                <TextBlock Grid.Row="0"
+                           Text="{Binding SelectedDateLabel}"
+                           FontSize="14"
+                           FontWeight="SemiBold"
+                           Foreground="White"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,12"/>
+
+                <Border Grid.Row="1"
+                        Height="1"
+                        Background="#2F3640"
+                        Margin="0,0,0,12"/>
+
+                <!--
+                    Listen af aftaler for den valgte dag.
+                    Appointments er en ObservableCollection fra ViewModel
+                    — den opdateres automatisk når en ny dag vælges.
+                -->
+                <ListBox Grid.Row="2"
+                         ItemsSource="{Binding Appointments}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto">
+
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Padding" Value="0,0,0,12"/>
+                            <Setter Property="Background" Value="Transparent"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            <!-- Fjern markering — vi behøver ikke at kunne vælge aftaler her -->
+                            <Setter Property="Focusable" Value="False"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+
+                    <!--
+                        Hvert AppointmentInfo-objekt vises med:
+                          - Tidspunktet øverst (hvid tekst)
+                          - Klientnavnet under (lysegrå tekst)
+                    -->
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding TimeSlot}"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="White"/>
+                                <TextBlock Text="{Binding ClientName}"
+                                           FontSize="12"
+                                           Foreground="#BDC3C7"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+
+                </ListBox>
+
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>

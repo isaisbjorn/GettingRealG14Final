@@ -1,0 +1,236 @@
+<!--
+    WelcomeView.xaml
+    Velkomstskærmen med menubjælken til venstre og dagens program til højre.
+
+    Layout:
+      Venstre (220px, mørk) — navigation med menuknapper + log ud
+      Højre (* , lys)       — dagens aftaler sorteret efter tidspunkt
+-->
+<Window x:Class="wpfGettingRealG14This.Views.WelcomeView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="ManuVision — Velkommen"
+        Height="500" Width="700"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterScreen"
+        Background="#2F3640">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <!-- Venstre: den mørke menubjælke -->
+            <ColumnDefinition Width="220"/>
+            <!-- Højre: indholdspanel -->
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ==================== -->
+        <!-- VENSTRE MENU-PANEL   -->
+        <!-- ==================== -->
+        <Border Grid.Column="0"
+                Background="#1E272E"
+                Padding="0,32,0,0">
+            <!--
+                DockPanel giver os mulighed for at "docke" Log ud-knappen
+                i bunden af panelet mens resten fylder op fra toppen.
+                LastChildFill=False betyder at det sidste element ikke
+                fylder den resterende plads — det placeres bare i bunden.
+            -->
+            <DockPanel LastChildFill="False">
+
+                <!-- Indhold der stables fra toppen -->
+                <StackPanel DockPanel.Dock="Top">
+
+                    <!-- Logo -->
+                    <TextBlock Text="ManuVision"
+                               FontSize="20"
+                               FontWeight="Light"
+                               Foreground="White"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,4"/>
+                    <TextBlock Text="Kropsbehandling"
+                               FontSize="12"
+                               FontWeight="Light"
+                               Foreground="#7F8C8D"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,40"/>
+
+                    <!--
+                        StringFormat i binding — viser brugernavnet som "Velkommen, admin"
+                        {0} erstattes med værdien af Username fra ViewModel
+                    -->
+                    <TextBlock Text="{Binding Username, StringFormat='Velkommen, {0}'}"
+                               FontSize="13"
+                               Foreground="#BDC3C7"
+                               HorizontalAlignment="Center"
+                               Margin="0,0,0,32"/>
+
+                    <!-- Menuknapper — style defineret i App.xaml -->
+                    <Button Content="Klienter"
+                            Command="{Binding OpenClientsCommand}"
+                            Style="{StaticResource MenuKnap}"/>
+
+                    <Button Content="Aftaler"
+                            Command="{Binding OpenAppointmentsCommand}"
+                            Style="{StaticResource MenuKnap}"/>
+
+                    <Button Content="Øvelser"
+                            Command="{Binding OpenExercisesCommand}"
+                            Style="{StaticResource MenuKnap}"/>
+
+                    <Button Content="Kalender"
+                            Command="{Binding OpenCalendarCommand}"
+                            Style="{StaticResource MenuKnap}"/>
+
+                </StackPanel>
+
+                <!--
+                    Log ud-knap — dockes i bunden af panelet
+                    Lukker dette vindue og åbner en ny login-skærm
+                -->
+                <Button DockPanel.Dock="Bottom"
+                        Content="Log ud"
+                        Command="{Binding LogOutCommand}"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Foreground="#7F8C8D"
+                        FontSize="12"
+                        Cursor="Hand"
+                        Padding="0,12"
+                        Margin="0,0,0,16"/>
+
+            </DockPanel>
+        </Border>
+
+        <!-- ==================== -->
+        <!-- HØJRE: DAGENS AFTALER -->
+        <!-- ==================== -->
+        <Border Grid.Column="1"
+                Background="#F5F6FA"
+                Padding="32">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <!-- Datooverskrift -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Undertitel -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Skillelinje -->
+                    <RowDefinition Height="Auto"/>
+                    <!-- Aftaleliste eller "ingen aftaler"-besked -->
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!--
+                    TodaysDateLabel vises som fx "Fredag d. 16. maj"
+                    — beregnes i WelcomeViewModel.LoadTodaysAppointments()
+                -->
+                <TextBlock Grid.Row="0"
+                           Text="{Binding TodaysDateLabel}"
+                           FontSize="22"
+                           FontWeight="SemiBold"
+                           Foreground="#2F3640"
+                           Margin="0,0,0,4"/>
+
+                <TextBlock Grid.Row="1"
+                           Text="Dagens aftaler"
+                           FontSize="13"
+                           Foreground="#7F8C8D"
+                           Margin="0,0,0,16"/>
+
+                <Border Grid.Row="2"
+                        Height="1"
+                        Background="#E0E0E0"
+                        Margin="0,0,0,16"/>
+
+                <!--
+                    Vi lægger to ting ovenpå hinanden i en Grid:
+                      1) Teksten "Ingen aftaler i dag" — kun synlig når listen er tom
+                      2) Selve listen — skjult når listen er tom
+
+                    Visibility styres af triggers på hvert element
+                -->
+                <Grid Grid.Row="3">
+
+                    <!--
+                        "Ingen aftaler"-besked
+                        Skjult som standard, vises kun hvis listen er tom (Count = 0)
+                    -->
+                    <TextBlock Text="Ingen aftaler i dag"
+                               FontSize="15"
+                               Foreground="#BDC3C7"
+                               VerticalAlignment="Top"
+                               Margin="0,8,0,0">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <!-- Skjult som udgangspunkt -->
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <!-- Vis teksten kun hvis der ikke er nogen aftaler -->
+                                    <DataTrigger Binding="{Binding TodaysAppointments.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+
+                    <!--
+                        Aftaleliste — synlig som standard,
+                        skjules kun hvis listen er tom (Count = 0)
+                    -->
+                    <ListBox ItemsSource="{Binding TodaysAppointments}"
+                             Background="Transparent"
+                             BorderThickness="0"
+                             ScrollViewer.VerticalScrollBarVisibility="Auto">
+                        <ListBox.Style>
+                            <Style TargetType="ListBox">
+                                <!-- Vis listen som udgangspunkt -->
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <!-- Skjul listen hvis den er tom -->
+                                    <DataTrigger Binding="{Binding TodaysAppointments.Count}" Value="0">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ListBox.Style>
+
+                        <ListBox.ItemContainerStyle>
+                            <Style TargetType="ListBoxItem">
+                                <Setter Property="Padding" Value="0,0,0,14"/>
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Setter Property="Focusable" Value="False"/>
+                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                            </Style>
+                        </ListBox.ItemContainerStyle>
+
+                        <!--
+                            Hvert AppointmentInfo-objekt vises med:
+                              - Tidspunkt øverst (mørk tekst)
+                              - Klientnavn under (lysegrå)
+                        -->
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel>
+                                    <TextBlock Text="{Binding TimeSlot}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="#2F3640"/>
+                                    <TextBlock Text="{Binding ClientName}"
+                                               FontSize="13"
+                                               Foreground="#7F8C8D"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+
+                    </ListBox>
+
+                </Grid>
+            </Grid>
+        </Border>
+
+    </Grid>
+</Window>
