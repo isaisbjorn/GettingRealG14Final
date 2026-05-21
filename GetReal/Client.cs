@@ -13,7 +13,7 @@ namespace GetReal
 		public string Phone { get; set; }
 		public string Email { get; set; }
 		public DateOnly Birthday { get; set; }
-		public List<AssignedExercise> AssignedExercises { get; set; } = new List<AssignedExercise>();
+		// public List<AssignedExercise> AssignedExercises { get; set; } = new List<AssignedExercise>();
 		public List<TreatmentCourse> TreatmentCourses { get; set; } = new List<TreatmentCourse>();
 		public Client(
 			string firstName,
