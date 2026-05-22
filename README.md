@@ -24,3 +24,5 @@ wpfGettingRealG14This: WPF-applikationen med ViewModels, Views og Helpers
 
 Data gemmes automatisk i JSON-filer (clients.json og clientnotes.json)
 
+Vi er bevidste om at der er uhørt mange kommentare i koden - men disse er lavet som vores egne interne noter, som vi ønsker at beholde
+til fremtidige semestre.
